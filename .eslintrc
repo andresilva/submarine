@@ -5,12 +5,14 @@
     "plugin:@typescript-eslint/recommended",
     "prettier",
     "plugin:prettier/recommended",
+    "plugin:functional/no-exceptions",
+    "plugin:neverthrow/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": 2018,
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "functional"],
   "settings": {
     "import/resolver": {
       "node": {
