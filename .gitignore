@@ -1,6 +1,8 @@
+.eslintcache
+.log
+.npm
 dist
+node_modules/
+result
 yarn-debug.log*
 yarn-error.log*
-node_modules/
-.npm
-.eslintcache
