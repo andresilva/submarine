@@ -22,6 +22,18 @@ convict.addFormat({
 convict.addParser({ extension: "toml", parse: toml.parse });
 
 const schema = {
+  notifications: {
+    http: {
+      format: "source-array",
+      default: [],
+      children: {
+        url: {
+          format: "url",
+          default: null
+        }
+      }
+    }
+  },
   events: {
     format: "source-array",
     default: [],
@@ -34,12 +46,21 @@ const schema = {
   }
 };
 
+export type HttpNotificationConfig = {
+  url: string;
+};
+
+export type NotificationsConfig = {
+  http: HttpNotificationConfig[];
+};
+
 export type EventConfig = {
   matcher: string;
 };
 
 export type Config = {
   events: EventConfig[];
+  notifications: NotificationsConfig;
 };
 
 export default function loadConfig(filePath: string): Result<Config, Error> {

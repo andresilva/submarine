@@ -5,6 +5,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import "@polkadot/api-augment/polkadot";
 
 import { EventMatcher, newEventMatcher } from "./event-matcher";
+import sendNotifications from "./notification";
 import loadConfig from "./config";
 
 const log = new Logger();
@@ -33,17 +34,24 @@ async function main(): Promise<Result<void, Error>> {
 
   log.debug("event matchers: ", eventMatchers);
 
-  const unsubscribe = await api.query.system.events((events) => {
-    events.forEach((record) => {
+  const unsubscribe = await api.query.system.events(async (events) => {
+    for (const record of events) {
       const polkadotEvent = record.event;
 
       for (const eventMatcher of eventMatchers) {
         const event = eventMatcher.match(polkadotEvent);
         if (event) {
           log.info(`event: ${event.name}(${event.params.join(", ")})`);
+
+          const result = await sendNotifications(config.notifications, event);
+          if (result.isErr()) {
+            for (const error of result.error) {
+              log.error(error);
+            }
+          }
         }
       }
-    });
+    }
   });
 
   process.on("SIGINT", () => {
