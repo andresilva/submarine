@@ -7,8 +7,8 @@
   "bin": "dist/app.js",
   "scripts": {
     "build": "tsc",
-    "format": "prettier --ignore-path .eslintignore --write \"**/*.ts\" -c",
-    "lint": "eslint \"**/*.ts\" --fix",
+    "format": "prettier --ignore-path .eslintignore --write \"src/**/*.ts\" -c",
+    "lint": "eslint \"src/**/*.ts\" --fix",
     "start": "ts-node src/app.ts"
   },
   "dependencies": {
