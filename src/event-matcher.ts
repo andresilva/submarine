@@ -26,7 +26,7 @@ export function newEventMatcher(api: ApiPromise, pattern: string): Result<EventM
 
   const eventMatch = pattern.match(eventRegex);
   if (!eventMatch) {
-    return err(new Error("Invalid event definition."));
+    return err(new Error(`Invalid event definition: ${pattern}`));
   }
 
   const name = eventMatch[1];
@@ -34,7 +34,7 @@ export function newEventMatcher(api: ApiPromise, pattern: string): Result<EventM
 
   const eventTypeEval = Result.fromThrowable(
     (event) => safeEval(event, { api }),
-    () => new Error("Invalid event name.")
+    () => new Error(`Invalid event name: ${name}`)
   );
 
   const typePredicateResult = eventTypeEval(`api.events.${name}.is`);
@@ -45,7 +45,7 @@ export function newEventMatcher(api: ApiPromise, pattern: string): Result<EventM
   const typePredicate = typePredicateResult.value;
 
   if (typeof typePredicate !== "function") {
-    return err(new Error("Invalid event name."));
+    return err(new Error(`Invalid event name: ${name}`));
   }
 
   if (!rawParams) {
@@ -53,12 +53,12 @@ export function newEventMatcher(api: ApiPromise, pattern: string): Result<EventM
   }
 
   if (!eventParamsValidationRegex.test(rawParams)) {
-    return err(new Error("Invalid event params definition."));
+    return err(new Error(`Invalid event params definition: ${rawParams}`));
   }
 
   const eventParamsMatch = rawParams.matchAll(eventParamsRegex);
   if (!eventParamsMatch) {
-    return err(new Error("Unreachable: failed to match event params."));
+    return err(new Error("Unreachable: failed to match event params"));
   }
 
   let index = 0;
