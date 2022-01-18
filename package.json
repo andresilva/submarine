@@ -21,6 +21,7 @@
     "neverthrow": "^4.3.1",
     "safe-eval": "^0.4.1",
     "toml": "^3.0.0",
+    "tslib": "^2.3.1",
     "tslog": "^3.3.1"
   },
   "devDependencies": {
