@@ -5,18 +5,24 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import "@polkadot/api-augment/polkadot";
 
 import { EventMatcher, newEventMatcher } from "./event-matcher";
-import config from "./config";
+import loadConfig from "./config";
 
 const log = new Logger();
 
 async function main(): Promise<Result<void, Error>> {
+  const configResult = loadConfig("config.toml");
+  if (configResult.isErr()) {
+    return err(configResult.error);
+  }
+  const config = configResult.value;
+
   const wsProvider = new WsProvider("wss://rpc.polkadot.io");
   const api = await ApiPromise.create({ provider: wsProvider });
 
   const eventMatchers: EventMatcher[] = [];
-  for (const event of config.get("events")) {
+  for (const event of config.events) {
     /* eslint-disable */
-    const eventMatcherResult = newEventMatcher(api, event["matcher"]);
+    const eventMatcherResult = newEventMatcher(api, event.matcher);
     /* eslint-enable */
     if (eventMatcherResult.isErr()) {
       return err(eventMatcherResult.error);
