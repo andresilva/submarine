@@ -22,9 +22,7 @@ async function main(): Promise<Result<void, Error>> {
 
   const eventMatchers: EventMatcher[] = [];
   for (const event of config.events) {
-    /* eslint-disable */
     const eventMatcherResult = newEventMatcher(api, event.matcher);
-    /* eslint-enable */
     if (eventMatcherResult.isErr()) {
       return err(eventMatcherResult.error);
     }

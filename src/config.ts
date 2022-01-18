@@ -9,9 +9,7 @@ convict.addFormat({
   name: "source-array",
   validate: (sources, schema) => {
     if (!Array.isArray(sources)) {
-      /* eslint-disable */
       throw new Error("must be of type Array");
-      /* eslint-enable */
     }
 
     for (const source of sources) {
@@ -66,7 +64,6 @@ export type Config = {
 export default function loadConfig(filePath: string): Result<Config, Error> {
   const config = convict(schema);
 
-  /* eslint-disable */
   try {
     config.loadFile(filePath);
   } catch {
@@ -78,7 +75,6 @@ export default function loadConfig(filePath: string): Result<Config, Error> {
   } catch (error) {
     return err(new Error(`Config validation failed: ${(error as Error).message}`));
   }
-  /* eslint-enable */
 
   return ok(config.getProperties());
 }
