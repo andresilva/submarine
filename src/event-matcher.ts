@@ -5,7 +5,12 @@ import safeEval from "safe-eval";
 /* eslint-enable */
 
 import { ApiPromise } from "@polkadot/api";
-import { Event } from "@polkadot/types/interfaces";
+import { Event as PolkadotEvent } from "@polkadot/types/interfaces";
+
+export interface Event {
+  readonly name: string;
+  readonly params: string[];
+}
 
 export interface EventParamMatcher {
   readonly index: number;
@@ -16,7 +21,7 @@ export interface EventMatcher {
   readonly name: string;
   readonly params?: EventParamMatcher[];
 
-  match(event: Event): boolean;
+  match(event: PolkadotEvent): Event | undefined;
 }
 
 export function newEventMatcher(api: ApiPromise, pattern: string): Result<EventMatcher, Error> {
@@ -48,8 +53,24 @@ export function newEventMatcher(api: ApiPromise, pattern: string): Result<EventM
     return err(new Error(`Invalid event name: ${name}`));
   }
 
+  const eventFromPolkadotEvent = (event: PolkadotEvent) => {
+    const params = event.data.map((i) => i.toString());
+    return {
+      name: `${event.section}.${event.method}`,
+      params
+    };
+  };
+
   if (!rawParams) {
-    return ok({ name, match: typePredicate });
+    return ok({
+      name,
+      match: (event) => {
+        if (typePredicate(event)) {
+          return eventFromPolkadotEvent(event);
+        }
+        return undefined;
+      }
+    });
   }
 
   if (!eventParamsValidationRegex.test(rawParams)) {
@@ -73,7 +94,7 @@ export function newEventMatcher(api: ApiPromise, pattern: string): Result<EventM
     index += 1;
   }
 
-  const paramsPredicate = (event: Event) => {
+  const paramsPredicate = (event: PolkadotEvent) => {
     return (
       params.length === 0 ||
       params.every((param) => {
@@ -85,8 +106,11 @@ export function newEventMatcher(api: ApiPromise, pattern: string): Result<EventM
     );
   };
 
-  const predicate = (event: Event) => {
-    return typePredicate(event) && paramsPredicate(event);
+  const predicate = (event: PolkadotEvent) => {
+    if (typePredicate(event) && paramsPredicate(event)) {
+      return eventFromPolkadotEvent(event);
+    }
+    return undefined;
   };
 
   return ok({ name, params, match: predicate });

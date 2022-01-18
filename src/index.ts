@@ -35,12 +35,12 @@ async function main(): Promise<Result<void, Error>> {
 
   const unsubscribe = await api.query.system.events((events) => {
     events.forEach((record) => {
-      const { event } = record;
+      const polkadotEvent = record.event;
 
       for (const eventMatcher of eventMatchers) {
-        if (eventMatcher.match(event)) {
-          const eventData = event.data.map((i) => i.toString()).join(", ");
-          log.info(`event: ${event.section}.${event.method}(${eventData})`);
+        const event = eventMatcher.match(polkadotEvent);
+        if (event) {
+          log.info(`event: ${event.name}(${event.params.join(", ")})`);
         }
       }
     });
