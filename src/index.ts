@@ -33,6 +33,8 @@ async function main(): Promise<Result<void, Error>> {
   log.debug("event matchers: ", eventMatchers);
 
   const unsubscribe = await api.query.system.events(async (events) => {
+    const notifications = [];
+
     for (const record of events) {
       const polkadotEvent = record.event;
 
@@ -41,12 +43,16 @@ async function main(): Promise<Result<void, Error>> {
         if (event) {
           log.info(`event: ${event.name}(${event.params.join(", ")})`);
 
-          const result = await sendNotifications(config.notifications, event);
-          if (result.isErr()) {
-            for (const error of result.error) {
-              log.error(error);
-            }
-          }
+          notifications.push(sendNotifications(config.notifications, event));
+        }
+      }
+    }
+
+    const results = await Promise.all(notifications);
+    for (const result of results) {
+      if (result.isErr()) {
+        for (const error of result.error) {
+          log.error(error);
         }
       }
     }
