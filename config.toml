@@ -1,0 +1,5 @@
+[[events]]
+matcher = "balances.Transfer"
+
+[[events]]
+matcher = "crowdloan.Contributed"

@@ -1,9 +1,11 @@
-import { Logger } from "tslog";
 import { ok, err, Result } from "neverthrow";
+import { Logger } from "tslog";
+
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import "@polkadot/api-augment/polkadot";
 
-import { newEventMatcher } from "./event-matcher";
+import { EventMatcher, newEventMatcher } from "./event-matcher";
+import config from "./config";
 
 const log = new Logger();
 
@@ -11,22 +13,29 @@ async function main(): Promise<Result<void, Error>> {
   const wsProvider = new WsProvider("wss://rpc.polkadot.io");
   const api = await ApiPromise.create({ provider: wsProvider });
 
-  const matcher = "api.events.balances.Transfer(_,_,50000000000)";
+  const eventMatchers: EventMatcher[] = [];
+  for (const event of config.get("events")) {
+    /* eslint-disable */
+    const eventMatcherResult = newEventMatcher(api, event["matcher"]);
+    /* eslint-enable */
+    if (eventMatcherResult.isErr()) {
+      return err(eventMatcherResult.error);
+    }
 
-  const eventMatcherResult = newEventMatcher(api, matcher);
-  if (eventMatcherResult.isErr()) {
-    return err(eventMatcherResult.error);
+    eventMatchers.push(eventMatcherResult.value);
   }
 
-  const eventMatcher = eventMatcherResult.value;
+  log.debug("event matchers: ", eventMatchers);
 
   const unsubscribe = await api.query.system.events((events) => {
     events.forEach((record) => {
       const { event } = record;
 
-      if (eventMatcher.match(event)) {
-        const eventData = event.data.map((i) => i.toString()).join(", ");
-        log.info(`matched: ${event.section}.${event.method}(${eventData})`);
+      for (const eventMatcher of eventMatchers) {
+        if (eventMatcher.match(event)) {
+          const eventData = event.data.map((i) => i.toString()).join(", ");
+          log.info(`event: ${event.section}.${event.method}(${eventData})`);
+        }
       }
     });
   });

@@ -14,11 +14,16 @@
     "@polkadot/api": "^7.4.1",
     "@polkadot/api-augment": "^7.4.1",
     "@polkadot/types": "^7.4.1",
+    "convict": "^6.2.1",
+    "convict-format-with-validator": "^6.2.0",
     "neverthrow": "^4.3.1",
     "safe-eval": "^0.4.1",
+    "toml": "^3.0.0",
     "tslog": "^3.3.1"
   },
   "devDependencies": {
+    "@types/convict": "^6.1.1",
+    "@types/convict-format-with-validator": "^6.0.2",
     "@types/node": "^17.0.8",
     "@typescript-eslint/eslint-plugin": "^5.9.1",
     "@typescript-eslint/parser": "^5.9.1",
