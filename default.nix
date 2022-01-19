@@ -11,6 +11,10 @@ pkgs.mkYarnPackage {
     yarn build
   '';
 
+  postPatch = ''
+    sed -i '1i#!/usr/bin/env node' src/app.ts
+  '';
+
   postInstall = ''
     chmod +x $out/bin/$name
   '';

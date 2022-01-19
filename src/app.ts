@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { ok, err, Result } from "neverthrow";
 import { Logger } from "tslog";
 
