@@ -11,7 +11,12 @@ import loadConfig from "./config";
 const log = new Logger();
 
 async function main(): Promise<Result<void, Error>> {
-  const configResult = loadConfig("config.toml");
+  let configFile = process.argv[2];
+  if (!configFile || configFile.startsWith("--")) {
+    configFile = "config.toml";
+  }
+
+  const configResult = loadConfig(configFile);
   if (configResult.isErr()) {
     return err(configResult.error);
   }
