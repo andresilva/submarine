@@ -5,4 +5,4 @@ http = [{ url = "http://localhost:8080/notification" }]
 matcher = "balances.Transfer"
 
 [[events]]
-matcher = "crowdloan.Contributed"
+matcher = "crowdloan.Contributed(_, 2031, _)"
