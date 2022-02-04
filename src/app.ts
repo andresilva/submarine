@@ -5,7 +5,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import "@polkadot/api-augment/polkadot";
 
 import { EventMatcher, newEventMatcher } from "./event-matcher";
-import sendNotifications from "./notification";
+import { createClients, sendNotifications } from "./notification";
 import loadConfig from "./config";
 
 const log = new Logger();
@@ -37,6 +37,16 @@ async function main(): Promise<Result<void, Error>> {
 
   log.debug("event matchers: ", eventMatchers);
 
+  const notificationClientsResult = await createClients(config.services);
+  if (notificationClientsResult.isErr()) {
+    return err(notificationClientsResult.error);
+  }
+  const notificationClients = notificationClientsResult.value;
+
+  if (!notificationClients.twilio && config.notifications.sms.length !== 0) {
+    log.warn("SMS notifications are enabled but Twilio service is not configured.");
+  }
+
   const unsubscribe = await api.query.system.events(async (events) => {
     const notifications = [];
 
@@ -48,7 +58,7 @@ async function main(): Promise<Result<void, Error>> {
         if (event) {
           log.info(`event: ${event.name}(${event.params.join(", ")})`);
 
-          notifications.push(sendNotifications(config.notifications, event));
+          notifications.push(sendNotifications(notificationClients, config.notifications, event));
         }
       }
     }

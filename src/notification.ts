@@ -1,9 +1,29 @@
 import { ok, err, Result } from "neverthrow";
 import fetch from "cross-fetch";
-import { NotificationsConfig } from "./config";
+import { Twilio } from "twilio";
+import { NotificationsConfig, ServiceConfig } from "./config";
 import { Event } from "./event-matcher";
 
-export default async function sendNotifications(
+export type NotificationClients = {
+  twilio?: [Twilio, string];
+};
+
+export async function createClients(
+  config: ServiceConfig
+): Promise<Result<NotificationClients, Error>> {
+  let twilio: [Twilio, string] | undefined;
+  if (config.twilio.account_sid && config.twilio.auth_token && config.twilio.from_number) {
+    twilio = [
+      new Twilio(config.twilio.account_sid, config.twilio.auth_token),
+      config.twilio.from_number
+    ];
+  }
+
+  return ok({ twilio });
+}
+
+export async function sendNotifications(
+  clients: NotificationClients,
   config: NotificationsConfig,
   event: Event
 ): Promise<Result<void, Error[]>> {
@@ -30,6 +50,20 @@ export default async function sendNotifications(
     };
 
     notifications.push(notification());
+  }
+
+  if (clients.twilio) {
+    for (const sms of config.sms) {
+      const notification = clients.twilio[0].messages
+        .create({
+          from: clients.twilio[1],
+          to: sms.number,
+          body: JSON.stringify(event)
+        })
+        .catch((error) => errors.push(new Error(`SMS notification failed: ${error.message}`)));
+
+      notifications.push(notification);
+    }
   }
 
   await Promise.all(notifications);

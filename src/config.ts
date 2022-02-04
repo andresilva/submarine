@@ -20,6 +20,22 @@ convict.addFormat({
 convict.addParser({ extension: "toml", parse: toml.parse });
 
 const schema = {
+  services: {
+    twilio: {
+      account_sid: {
+        format: String,
+        default: ""
+      },
+      auth_token: {
+        format: String,
+        default: ""
+      },
+      from_number: {
+        format: String,
+        default: ""
+      }
+    }
+  },
   notifications: {
     http: {
       format: "source-array",
@@ -27,6 +43,16 @@ const schema = {
       children: {
         url: {
           format: "url",
+          default: null
+        }
+      }
+    },
+    sms: {
+      format: "source-array",
+      default: [],
+      children: {
+        number: {
+          format: String,
           default: null
         }
       }
@@ -44,12 +70,27 @@ const schema = {
   }
 };
 
+export type TwilioConfig = {
+  account_sid: string;
+  auth_token: string;
+  from_number: string;
+};
+
+export type ServiceConfig = {
+  twilio: TwilioConfig;
+};
+
+export type SmsNotificationConfig = {
+  number: string;
+};
+
 export type HttpNotificationConfig = {
   url: string;
 };
 
 export type NotificationsConfig = {
   http: HttpNotificationConfig[];
+  sms: SmsNotificationConfig[];
 };
 
 export type EventConfig = {
@@ -57,6 +98,7 @@ export type EventConfig = {
 };
 
 export type Config = {
+  services: ServiceConfig;
   events: EventConfig[];
   notifications: NotificationsConfig;
 };
