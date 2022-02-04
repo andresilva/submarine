@@ -5,13 +5,42 @@ and sending notifications when certain events happen.
 
 ## Event matching
 
+In order to match events the application supports a simple pattern-matching interface.
+
+``` javascript
+// minimal form, matches all events of this type
+module-name.EventName
+
+// matches events of this type whose arguments match the given values
+module-name.EventName(1, asdf, 0x7899)
+
+// matches events of this type where the second argument matches the given value.
+// underscore (_) is used as a wildcard operator.
+module-name.EventName(_, asdf, _)
+```
+
+A list of events supported by polkadot.js can be found [here](https://polkadot.js.org/docs/substrate/events).
+
 ## Notifications
 
 Currently the application supports sending notifications over HTTP, Email and SMS.
 
+The payload of the notification is a JSON-encoded representation of the matched event and its parameters.
+
+``` json
+{
+  "name": "balances.Transfer",
+  "params": [
+    "111111111111111111111111111111111HC",
+    "163KH1bkorFNdyVktuFAoVdCHWz7HChPB7BrzfJFQvsFLgn",
+    "42"
+  ]
+}
+```
+
 ## Sample config
 
-```toml
+``` toml
 [services.smtp]
 host = "smtp.example.com"
 user = "user"
