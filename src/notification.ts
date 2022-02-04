@@ -48,25 +48,23 @@ export async function sendNotifications(
   const errors: Error[] = [];
 
   for (const http of config.http) {
-    const notification = async () => {
-      try {
-        const response = await fetch(http.url, {
-          method: "POST",
-          body: JSON.stringify(event),
-          headers: { "Content-Type": "application/json" }
-        });
-
+    const notification = fetch(http.url, {
+      method: "POST",
+      body: JSON.stringify(event),
+      headers: { "Content-Type": "application/json" }
+    })
+      .then(async (response) => {
         if (!response.ok) {
           errors.push(
             new Error(`HTTP notification failed: ${response.status} - ${await response.text()}`)
           );
         }
-      } catch (error) {
-        errors.push(new Error(`HTTP notification failed: ${(error as Error).message}`));
-      }
-    };
+      })
+      .catch((error) => {
+        errors.push(new Error(`HTTP notification failed: ${error.message}`));
+      });
 
-    notifications.push(notification());
+    notifications.push(notification);
   }
 
   if (clients.smtp) {
