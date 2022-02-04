@@ -63,3 +63,20 @@ matcher = "balances.Transfer"
 [[events]]
 matcher = "crowdloan.Contributed(_, 1337, _)"
 ```
+
+## Running
+
+``` shell
+# expects a config file at ./config.toml
+yarn start
+
+# you can pass the config file location as a parameter
+yarn start ~/.config/submarine/config.toml
+```
+
+This project includes a derivation for packaging with nix.
+
+``` shell
+nix-build
+./result/bin/submarine
+```
