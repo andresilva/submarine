@@ -21,6 +21,32 @@ convict.addParser({ extension: "toml", parse: toml.parse });
 
 const schema = {
   services: {
+    smtp: {
+      host: {
+        format: String,
+        default: ""
+      },
+      port: {
+        format: "port",
+        default: 465
+      },
+      secure: {
+        format: "Boolean",
+        default: true
+      },
+      user: {
+        format: String,
+        default: ""
+      },
+      password: {
+        format: String,
+        default: ""
+      },
+      from_email: {
+        format: String,
+        default: ""
+      }
+    },
     twilio: {
       account_sid: {
         format: String,
@@ -43,6 +69,16 @@ const schema = {
       children: {
         url: {
           format: "url",
+          default: null
+        }
+      }
+    },
+    email: {
+      format: "source-array",
+      default: [],
+      children: {
+        email: {
+          format: "email",
           default: null
         }
       }
@@ -70,6 +106,15 @@ const schema = {
   }
 };
 
+export type SmtpConfig = {
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  password: string;
+  from_email: string;
+};
+
 export type TwilioConfig = {
   account_sid: string;
   auth_token: string;
@@ -77,7 +122,12 @@ export type TwilioConfig = {
 };
 
 export type ServiceConfig = {
+  smtp: SmtpConfig;
   twilio: TwilioConfig;
+};
+
+export type EmailNotificationConfig = {
+  email: string;
 };
 
 export type SmsNotificationConfig = {
@@ -90,6 +140,7 @@ export type HttpNotificationConfig = {
 
 export type NotificationsConfig = {
   http: HttpNotificationConfig[];
+  email: EmailNotificationConfig[];
   sms: SmsNotificationConfig[];
 };
 

@@ -47,6 +47,10 @@ async function main(): Promise<Result<void, Error>> {
     log.warn("SMS notifications are enabled but Twilio service is not configured.");
   }
 
+  if (!notificationClients.smtp && config.notifications.email.length !== 0) {
+    log.warn("Email notifications are enabled but SMTP service is not configured.");
+  }
+
   const unsubscribe = await api.query.system.events(async (events) => {
     const notifications = [];
 

@@ -1,11 +1,13 @@
 import { ok, err, Result } from "neverthrow";
 import fetch from "cross-fetch";
+import { createTransport, Transporter } from "nodemailer";
 import { Twilio } from "twilio";
 import { NotificationsConfig, ServiceConfig } from "./config";
 import { Event } from "./event-matcher";
 
 export type NotificationClients = {
   twilio?: [Twilio, string];
+  smtp?: [Transporter, string];
 };
 
 export async function createClients(
@@ -19,7 +21,22 @@ export async function createClients(
     ];
   }
 
-  return ok({ twilio });
+  let smtp: [Transporter, string] | undefined;
+  if (config.smtp.host && config.smtp.user && config.smtp.password && config.smtp.from_email) {
+    const transporter = createTransport({
+      host: config.smtp.host,
+      port: config.smtp.port,
+      secure: config.smtp.secure,
+      auth: {
+        user: config.smtp.user,
+        pass: config.smtp.password
+      }
+    });
+
+    smtp = [transporter, config.smtp.from_email];
+  }
+
+  return ok({ twilio, smtp });
 }
 
 export async function sendNotifications(
@@ -50,6 +67,21 @@ export async function sendNotifications(
     };
 
     notifications.push(notification());
+  }
+
+  if (clients.smtp) {
+    for (const email of config.email) {
+      const notification = clients.smtp[0]
+        .sendMail({
+          from: clients.smtp[1],
+          to: email.email,
+          subject: "submarine notification",
+          text: JSON.stringify(event)
+        })
+        .catch((error) => errors.push(new Error(`Email notification failed: ${error.message}`)));
+
+      notifications.push(notification);
+    }
   }
 
   if (clients.twilio) {
